@@ -1,18 +1,29 @@
 FROM java:openjdk-8-jdk-alpine
 MAINTAINER diego.alvarez.zuluaga@gmail.com
 
-RUN apk add --update openssl unzip bash libstdc++
+RUN apk add --no-cache openssl unzip bash libstdc++
 
-RUN wget https://services.gradle.org/distributions/gradle-4.10.2-bin.zip && \
-    unzip gradle-4.10.2-bin.zip
+# GRADLE
+ENV GRADLE_VERSION "gradle-4.10.2"
+WORKDIR /opt/gradle
+RUN wget https://services.gradle.org/distributions/${GRADLE_VERSION}-bin.zip && \
+  unzip ${GRADLE_VERSION}-bin.zip && rm ${GRADLE_VERSION}-bin.zip
+ENV GRADLE_HOME=/opt/gradle/$GRADLE_VERSION
+ENV PATH=$PATH:$JAVA_HOME/bin:$GRADLE_HOME/bin
 
-ENV GRADLE_HOME=/gradle-4.10.2  \
-    PATH=$PATH:$JAVA_HOME/bin:$GRADLE/bin
+# KAFKA-MONITOR
+ENV KAFKA_MONITOR_VERSION "2.0.0"
+WORKDIR /opt
+ENV KAFKA_MONITOR_HOME=/opt/kafka-monitor
+RUN wget https://github.com/linkedin/kafka-monitor/archive/${KAFKA_MONITOR_VERSION}.zip && \
+  unzip ${KAFKA_MONITOR_VERSION}.zip && \
+  rm ${KAFKA_MONITOR_VERSION}.zip && \
+  ln -s /opt/kafka-monitor-$KAFKA_MONITOR_VERSION $KAFKA_MONITOR_HOME && \
+  cd $KAFKA_MONITOR_HOME && \
+  ./gradlew jar
 
-RUN wget https://github.com/linkedin/kafka-monitor/archive/1.1.0.zip
-RUN unzip 1.1.0.zip && \
-    cd kafka-monitor-1.1.0 && \
-    ./gradlew jar
+WORKDIR $KAFKA_MONITOR_HOME
+COPY kafka-monitor-start.sh kafka-monitor-start.sh
+RUN chmod +x kafka-monitor-start.sh
 
-EXPOSE 8000 9999 
-
+CMD ["./kafka-monitor-start.sh"]
