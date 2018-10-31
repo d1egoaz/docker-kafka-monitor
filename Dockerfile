@@ -1,10 +1,11 @@
-FROM java:openjdk-8-jdk-alpine
+FROM openjdk:8u181-jdk-alpine
 MAINTAINER diego.alvarez.zuluaga@gmail.com
 
 RUN apk update \
   && apk upgrade \
   && apk add --no-cache \
   bash \
+  libc6-compat \
   libstdc++ \
   openssl \
   unzip

@@ -1,4 +1,4 @@
-TAG ?= 0.0.1.dev
+TAG ?= 2.0.1.dev
 PREFIX ?= ${USER}/kafka-monitor
 
 localcontainer:
